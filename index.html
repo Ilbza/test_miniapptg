@@ -15,34 +15,6 @@
     <button type="submit">Записаться</button>
   </form>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    let tg = window.Telegram.WebApp;
-    tg.expand(); // приложение на весь экран
-
-    document.getElementById("lessonForm").onsubmit = (e) => {
-      e.preventDefault();
-
-      let data = {
-        name: document.getElementById("name").value,
-        phone: document.getElementById("phone").value,
-        email: document.getElementById("email").value
-      };
-
-      tg.sendData(JSON.stringify(data));
-      tg.close();
-    };
-  </script>
-</head>
-<body style="font-family: sans-serif;">
-  <h2>Запись на вводное занятие</h2>
-  <form id="lessonForm">
-    <input type="text" id="name" placeholder="Ваше имя" required><br><br>
-    <input type="tel" id="phone" placeholder="Ваш телефон" required><br><br>
-    <input type="email" id="email" placeholder="Ваш email" required><br><br>
-    <button type="submit">Записаться</button>
-  </form>
-  
   <script>
     let tg = window.Telegram.WebApp;
     tg.expand();
