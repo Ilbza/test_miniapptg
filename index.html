@@ -5,13 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Запись на вводное занятие</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background-color: #EAE1FC; /* светло-фиолетовый фон */
+      text-align: center;
+    }
+    input {
+      padding: 10px;
+      width: 80%;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #7E57C2; /* кнопка чуть темнее фона */
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    img.logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    body {
+      background-color: #EDE7F6; /* светло-фиолетовый фон */
+      font-family: sans-serif;
+      text-align: center;
+      padding-top: 20px;
+    }
+  </style>
 </head>
-<body style="font-family:sans-serif; padding:20px;">
+<body>
+  <img src="logo.png" alt="Логотип" class="logo">
   <h2>Запись на вводное занятие</h2>
   <form id="lessonForm">
-    <input type="text" id="name" placeholder="Ваше имя" required><br><br>
-    <input type="tel" id="phone" placeholder="Ваш телефон" required><br><br>
-    <input type="email" id="email" placeholder="Ваш email" required><br><br>
+    <input type="text" id="name" placeholder="Ваше имя" required><br>
+    <input type="tel" id="phone" placeholder="Ваш телефон" required><br>
+    <input type="email" id="email" placeholder="Ваш email" required><br>
     <button type="submit">Записаться</button>
   </form>
 
