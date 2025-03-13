@@ -1,99 +1,112 @@
 <!DOCTYPE html>
-<html lang=\"ru\">
+<html lang="ru">
 <head>
-  <meta charset=\"UTF-8\">
-  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-  <title>Тест проверки знаний</title>
-  <script src=\"https://telegram.org/js/telegram-web-app.js\"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Запись на вводное занятие</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body {font-family: Arial, sans-serif;padding:20px;background:#f3e8ff;}
-    button {padding: 10px; margin:10px 0;cursor:pointer;}
-    input {padding: 8px; margin:5px 0;width: 90%;}
-    .result {font-weight:bold;}
-    img.logo {width:150px;margin-bottom:15px;}
+    body {font-family: Arial, sans-serif; padding:20px; background:#f3e8ff;}
+    button {padding: 10px; margin:10px 0; cursor:pointer;}
+    input {padding: 8px; margin: 5px 0;width: 90%;}
+    .logo { width: 100px; margin-bottom: 10px; }
   </style>
 </head>
 <body>
 
-<div id=\"form\">
-  <img src=\"logo.png\" alt=\"Логотип\" class=\"logo\">
+<div id="form">
+  <img src="logo.png" alt="Логотип" class="logo">
   <h3>Оставьте заявку</h3>
-  <input placeholder=\"Ваше имя\" required><br>
-  <input placeholder=\"Телефон\" required><br>
-  <input placeholder=\"Email\" required><br>
-  <input placeholder=\"Класс\" required><br>
-  <button onclick=\"startTest()\">Отправить заявку</button>
+  <input id="name" placeholder="Ваше имя" required><br>
+  <input placeholder="Телефон" id="phone" required><br>
+  <input placeholder="Email" type="email" required><br>
+  <input placeholder="Класс" required><br>
+  <button onclick="startTest()">Отправить заявку</button>
 </div>
 
-<div id=\"test\" style=\"display:none;\">
-  <h3 id=\"question\">Вопрос</h3>
-  <div id=\"answers\"></div>
-  <div id=\"solution\" style=\"display:none;background:#e8d8ff;padding:10px;margin:10px 0;\"></div>
+<div id="test" style="display:none;">
+  <h3 id="question">Вопрос</h3>
+  <div id="answers"></div>
+  <div id="solution" style="margin-top:10px;color:green;"></div>
+  <button onclick="nextQuestion()" id="next" style="display:none;">Следующий вопрос</button>
 </div>
 
-<div id=\"final\" style=\"display:none;\">
-  <h3>Ваш результат: <span id=\"score\"></span>/6</h3>
-  <a href=\"https://t.me/umschoolone\" target=\"_blank\"><button>Перейти в Telegram канал</button></a>
+<div id="final" style="display:none;">
+  <h3>Ваш результат: <span id="score"></span>/6</h3>
+  <a href="https://t.me/umschoolone" target="_blank"><button>Перейти в Telegram канал</button></a>
 </div>
 
 <script>
 let tg = window.Telegram.WebApp;
-tg.expand();
+let current = 0, score = 0;
 
-const questions = [
-{ q:\"Сколько Н пишется в слове СОЛНЕЧ..ЫЙ?\",a:[\"1 Н\",\"2 НН\"],correct:0,sol:\"Солнечный — от слова СОЛНЦЕ, пишем одну Н.\"},
-{ q:\"Сколько Н пишется в слове ТУМА..ЫЙ?\",a:[\"1 Н\",\"2 НН\"],correct:1,sol:\"Туманный — от слова ТУМАН (основа на -Н), пишем НН.\"},
-{ q:\"Сколько Н пишется в слове РУМЯ..ЫЙ?\",a:[\"1 Н\",\"2 НН\"],correct:0,sol:\"Румяный — исключение, пишем с одной Н.\"},
-{ q:\"Во всех ли словах одна буква: о..бить, на..ломиться, на..писать?\",a:[\"Да\",\"Нет\"],correct:1,sol:\"отбить — ОТ-, надломить — НАД-, надписать — НАД-.\"},
-{ q:\"Во всех ли словах одна буква: з..бить, от..двинуть, д..рисовать?\",a:[\"Да\",\"Нет\"],correct:1,sol:\"забить — ЗА-, отодвинуть — ОТО-, дорисовать — ДО-.\"},
-{ q:\"Во всех ли словах одна буква: з..красить, н..стигнуть, пр..язык?\",a:[\"Да\",\"Нет\"],correct:1,sol:\"закрасить — ЗА-, настигнуть — НА-, праязык — ПРА-.\"}
+let questions = [
+  {q:"Сколько Н пишется в слове СОЛНЕЧ..ЫЙ?", a:["Н", "НН"], correct:0, sol:"Солнечный — образовано от слова СОЛНЦЕ, пишем одну Н."},
+  {q:"Сколько Н пишется в слове ТУМА..ЫЙ?", a:["1 Н","2 НН"], correct:1, sol:"Туманный от ТУМАН, пишем две Н."},
+  {q:"Сколько Н пишется в слове РУМЯ..ЫЙ?", a:["1 Н","2 НН"], correct:0, sol:"Румяный — слово-исключение, пишем с одной Н."},
+  {q:"Во всех ли словах одна буква: о..бить, на..ломиться, на..писать?", a:["Да","Нет"], correct:1, sol:"отбить — ОТ-, надломиться, надписать — НАД-."},
+  {q:"Во всех ли словах одна буква: з..бить, от..двинуть, д..рисовать?", a:["Да","Нет"], correct:1, sol:"забить — ЗА-, отодвинуть — ОТО-, дорисовать — ДО-."},
+  {q:"Во всех ли словах одна буква: з..красить, н..стигнуть, пр..язык?", a:["Да","Нет"], correct:1, sol:"закрасить — ЗА-, настигнуть — НА-, праязык — ПРА-."}
 ];
 
-let current=0,score=0;
+let current = 0;
+let score = 0;
 
 function startTest(){
-  document.getElementById(\"form\").style.display=\"none\";
-  document.getElementById(\"test\").style.display=\"block\";
+  document.getElementById("form").style.display="none";
+  document.getElementById("test").style.display="block";
   showQuestion();
 }
 
 function showQuestion(){
   let q = questions[current];
-  document.getElementById(\"question\").innerHTML = q.q;
-  document.getElementById(\"answers\").innerHTML = \"\";
-  document.getElementById(\"solution\").style.display=\"none\";
+  document.getElementById("question").innerHTML = q.q;
+  document.getElementById("answers").innerHTML = "";
 
-  q.a.forEach((answer,i)=>{
-    let btn = document.createElement(\"button\");
+  q.a.forEach((answer, i)=>{
+    let btn = document.createElement("button");
     btn.innerHTML = answer;
-    btn.onclick = ()=>answerQuestion(i);
-    document.getElementById(\"answers\").appendChild(btn);
+    btn.onclick = () => answerQuestion(i);
+    document.getElementById("answers").appendChild(btn);
   });
 }
 
 function answerQuestion(i){
   let correct = questions[current].correct;
-  if(i===correct)score++;
+  if(i===correct){score++;}
 
-  document.getElementById(\"solution\").innerHTML = questions[current].sol;
-  document.getElementById(\"solution\").style.display=\"block\";
-  
   current++;
 
-  setTimeout(()=>{
-    if(current<questions.length){
-      showQuestion();
-    }else{
-      finishTest();
-    }
-  },3000);
+  if(current < questions.length){
+    document.getElementById("answers").innerHTML = "";
+    showQuestion();
+  }else{
+    finishTest();
+  }
 }
 
 function finishTest(){
-  document.getElementById(\"test\").style.display=\"none\";
-  document.getElementById(\"final\").style.display=\"block\";
-  document.getElementById(\"score\").innerText=score;
+  document.getElementById("test").style.display="none";
+  document.getElementById("final").style.display="block";
+  document.getElementById("score").innerText = score;
 }
+
+let current=0,score=0;
+let questions=[
+  {q:"Сколько Н пишется в слове СОЛНЕЧ..ЫЙ?",a:["1 Н","2 НН"],correct:0,sol:"Солнечный — от слова СОЛНЦЕ, пишем одну Н."},
+  {q:"Сколько Н пишется в слове ТУМА..ЫЙ?",a:["1 Н","2 НН"],correct:1,sol:"Туманный — образовано от ТУМАН, пишем НН."},
+  {q:"Сколько Н пишется в слове РУМЯ..ЫЙ?",a:["1 Н","2 НН"],correct:0,sol:"Румяный — исключение, пишем одну Н."},
+  {q:"о..бить, на..ломиться, на..писать – одна буква?",a:["Да","Нет"],correct:1,sol:"отбить — ОТ, надломить — НАД, надписать — НАД."},
+  {q:"з..бить, от..двинуть, д..рисовать",a:["Да","Нет"],correct:1,sol:"забить — ЗА-, отодвинуть — ОТО-, дорисовать — ДО-."},
+  {q:"з..красить, н..стигнуть, пр..язык",a:["Да","Нет"],correct:1,sol:"закрасить — ЗА, настигнуть — НА, праязык — ПРА-."}
+];
+
+function startTest(){
+  document.getElementById("form").style.display="none";
+  document.getElementById("test").style.display="block";
+  showQuestion();
+}
+
 </script>
 
 </body>
