@@ -6,9 +6,9 @@
   <title>Запись на вводное занятие</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    body {font-family: Arial, sans-serif; padding:20px; background:#f3e8ff;}
-    button {padding: 10px; margin:10px 0; cursor:pointer;}
-    input {padding: 8px; margin: 5px 0;width: 90%;}
+    body { font-family: Arial, sans-serif; padding:20px; background:#f3e8ff; }
+    button { padding: 10px; margin:10px 0; cursor:pointer; }
+    input { padding: 8px; margin: 5px 0; width: 90%; }
     .logo { width: 100px; margin-bottom: 10px; }
   </style>
 </head>
@@ -18,22 +18,24 @@
   <img src="logo.png" alt="Логотип" class="logo">
   <h3>Оставьте заявку</h3>
   <input id="name" placeholder="Ваше имя" required><br>
-  <input placeholder="Телефон" id="phone" required><br>
-  <input placeholder="Email" type="email" required><br>
-  <input placeholder="Класс" required><br>
-  <button onclick="startTest()">Отправить заявку</button>
+  <input id="phone" placeholder="Телефон" required><br>
+  <input id="email" placeholder="Email" type="email" required><br>
+  <input id="class" placeholder="Класс" required><br>
+  <button onclick="sendForm()">Отправить заявку</button>
 </div>
 
 <div id="test" style="display:none;">
   <h3 id="question">Вопрос</h3>
   <div id="answers"></div>
   <div id="solution" style="margin-top:10px;color:green;"></div>
-  <button onclick="nextQuestion()" id="next" style="display:none;">Следующий вопрос</button>
+  <button onclick="nextQuestion()" id="nextBtn" style="display:none;">Следующий вопрос</button>
 </div>
 
 <div id="final" style="display:none;">
   <h3>Ваш результат: <span id="score"></span>/6</h3>
-  <a href="https://t.me/umschoolone" target="_blank"><button>Перейти в Telegram канал</button></a>
+  <a href="https://t.me/umschoolone" target="_blank">
+    <button>Перейти в Telegram канал</button>
+  </a>
 </div>
 
 <script>
@@ -41,72 +43,86 @@ let tg = window.Telegram.WebApp;
 let current = 0, score = 0;
 
 let questions = [
-  {q:"Сколько Н пишется в слове СОЛНЕЧ..ЫЙ?", a:["Н", "НН"], correct:0, sol:"Солнечный — образовано от слова СОЛНЦЕ, пишем одну Н."},
-  {q:"Сколько Н пишется в слове ТУМА..ЫЙ?", a:["1 Н","2 НН"], correct:1, sol:"Туманный от ТУМАН, пишем две Н."},
-  {q:"Сколько Н пишется в слове РУМЯ..ЫЙ?", a:["1 Н","2 НН"], correct:0, sol:"Румяный — слово-исключение, пишем с одной Н."},
-  {q:"Во всех ли словах одна буква: о..бить, на..ломиться, на..писать?", a:["Да","Нет"], correct:1, sol:"отбить — ОТ-, надломиться, надписать — НАД-."},
-  {q:"Во всех ли словах одна буква: з..бить, от..двинуть, д..рисовать?", a:["Да","Нет"], correct:1, sol:"забить — ЗА-, отодвинуть — ОТО-, дорисовать — ДО-."},
-  {q:"Во всех ли словах одна буква: з..красить, н..стигнуть, пр..язык?", a:["Да","Нет"], correct:1, sol:"закрасить — ЗА-, настигнуть — НА-, праязык — ПРА-."}
+  {q:"Сколько Н пишется в слове СОЛНЕЧ..ЫЙ?", a:["Н","НН"], correct:0},
+  {q:"Сколько Н пишется в слове ТУМА..ЫЙ?", a:["Н","НН"], correct:1},
+  {q:"Сколько Н пишется в слове РУМЯ..ЫЙ?", a:["Н","НН"], correct:0},
+  {q:"о..бить, на..ломиться, на..писать – одна буква?", a:["Да","Нет"], correct:1},
+  {q:"з..бить, от..двинуть, д..рисовать – одна буква?", a:["Да","Нет"], correct:1},
+  {q:"з..красить, н..стигнуть, пр..язык – одна буква?", a:["Да","Нет"], correct:1}
 ];
 
-let current = 0;
-let score = 0;
+function sendForm() {
+  let name = document.getElementById("name").value;
+  let phone = document.getElementById("phone").value;
+  let email = document.getElementById("email").value;
+  let classNum = document.getElementById("class").value;
 
-function startTest(){
-  document.getElementById("form").style.display="none";
-  document.getElementById("test").style.display="block";
+  if (!name || !phone || !email || !classNum) {
+    alert("Заполните все поля!");
+    return;
+  }
+
+  let data = { name, phone, email, classNum };
+  tg.sendData(JSON.stringify(data));
+
+  document.getElementById("form").style.display = "none";
+  document.getElementById("test").style.display = "block";
+
   showQuestion();
 }
 
-function showQuestion(){
+function showQuestion() {
   let q = questions[current];
-  document.getElementById("question").innerHTML = q.q;
+  document.getElementById("question").textContent = q.q;
   document.getElementById("answers").innerHTML = "";
+  document.getElementById("solution").innerHTML = "";
+  document.getElementById("nextBtn").style.display = "none";
 
-  q.a.forEach((answer, i)=>{
+  q.a.forEach((answer, i) => {
     let btn = document.createElement("button");
-    btn.innerHTML = answer;
+    btn.textContent = answer;
     btn.onclick = () => answerQuestion(i);
     document.getElementById("answers").appendChild(btn);
   });
 }
 
-function answerQuestion(i){
-  let correct = questions[current].correct;
-  if(i===correct){score++;}
+function answerQuestion(i) {
+  let q = questions[current];
+  if (i === q.correct) {
+    score++;
+  }
 
+  let solutions = [
+    "Солнечный — образовано от СОЛНЦЕ, пишем Н.",
+    "Туманный — от ТУМАН, пишем НН.",
+    "Румяный — исключение, пишем Н.",
+    "отбить — ОТ-, надломиться — НАД-, надписать — НАД-, буквы разные.",
+    "забить — ЗА-, отодвинуть — ОТО-, дорисовать — ДО-, буквы разные.",
+    "закрасить — ЗА-, настигнуть — НА-, праязык — ПРА-, буквы разные."
+  ];
+
+  document.getElementById("solution").textContent = solutions[current];
+  document.getElementById("nextBtn").style.display = "block";
+  document.getElementById("answers").innerHTML = "";
+}
+
+function nextQuestion() {
   current++;
-
-  if(current < questions.length){
-    document.getElementById("answers").innerHTML = "";
+  if (current < questions.length) {
     showQuestion();
-  }else{
-    finishTest();
+  } else {
+    showFinal();
   }
 }
 
-function finishTest(){
-  document.getElementById("test").style.display="none";
-  document.getElementById("final").style.display="block";
-  document.getElementById("score").innerText = score;
+function showFinal() {
+  document.getElementById("test").style.display = "none";
+  document.getElementById("final").style.display = "block";
+  document.getElementById("score").textContent = score;
+  tg.MainButton.hide();
 }
 
-let current=0,score=0;
-let questions=[
-  {q:"Сколько Н пишется в слове СОЛНЕЧ..ЫЙ?",a:["1 Н","2 НН"],correct:0,sol:"Солнечный — от слова СОЛНЦЕ, пишем одну Н."},
-  {q:"Сколько Н пишется в слове ТУМА..ЫЙ?",a:["1 Н","2 НН"],correct:1,sol:"Туманный — образовано от ТУМАН, пишем НН."},
-  {q:"Сколько Н пишется в слове РУМЯ..ЫЙ?",a:["1 Н","2 НН"],correct:0,sol:"Румяный — исключение, пишем одну Н."},
-  {q:"о..бить, на..ломиться, на..писать – одна буква?",a:["Да","Нет"],correct:1,sol:"отбить — ОТ, надломить — НАД, надписать — НАД."},
-  {q:"з..бить, от..двинуть, д..рисовать",a:["Да","Нет"],correct:1,sol:"забить — ЗА-, отодвинуть — ОТО-, дорисовать — ДО-."},
-  {q:"з..красить, н..стигнуть, пр..язык",a:["Да","Нет"],correct:1,sol:"закрасить — ЗА, настигнуть — НА, праязык — ПРА-."}
-];
-
-function startTest(){
-  document.getElementById("form").style.display="none";
-  document.getElementById("test").style.display="block";
-  showQuestion();
-}
-
+tg.expand();
 </script>
 
 </body>
